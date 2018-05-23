@@ -119,8 +119,13 @@ module Make(Cst:Constant.S) = struct
 (* Particular cases are important for symbolic constants *)
     if is_zero v1 then v2
     else if is_zero v2 then v1
-(* General case *)
-    else binop Op.Add Scalar.add v1 v2
+    else match v1,v2 with
+    | (Val (Concrete i1),Val (Symbolic (s,i2)))
+    | (Val (Symbolic (s,i2)),Val (Concrete i1)) ->
+        let i1 = Scalar.to_int i1 in
+        Val (Symbolic (s,i1+i2))
+    | _,_ -> (* General case *)
+    binop Op.Add Scalar.add v1 v2
 
   and orop v1 v2 =
     if is_zero v1 then v2

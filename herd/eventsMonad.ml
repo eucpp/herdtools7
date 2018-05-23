@@ -580,6 +580,16 @@ and type evt_struct = E.event_structure) =
 (**************)
 (* Mixd size  *)
 (**************)
+    let byte = MachSize.Byte
+    let byte_sz =  MachSize.nbytes byte
+
+    let nsz sz =
+      let n = MachSize.nbytes sz in
+      if n < byte_sz then
+        Warn.fatal "Size mismatch %s bigger then %s\n"
+          (MachSize.debug sz) (MachSize.debug byte) ;
+      assert (n mod byte_sz = 0) ;
+      n / byte_sz
 
     module Scalar = V.Cst.Scalar
     let def_size = Scalar.machsize
@@ -603,7 +613,7 @@ and type evt_struct = E.event_structure) =
           let vd =  V.fresh_var () in
           vd::ds,
           VC.Assign (vw,w)::VC.Assign (vd,d)::eqs in
-      do_rec (MachSize.nbytes sz) v
+      do_rec (nsz sz) v
 
 (* Translate from list of bytes  least significant first *)
     let rec recompose ds = match ds with
@@ -617,7 +627,7 @@ and type evt_struct = E.event_structure) =
 
 (* Bytes addresses, little endian *)
     let byte_eas sz a =
-      let kmax = MachSize.nbytes sz in
+      let kmax = nsz sz in
       let rec do_rec k =
         if k >= kmax then [],[]
         else
@@ -640,7 +650,7 @@ and type evt_struct = E.event_structure) =
               E.EventSet.add
                 {E.eiid = eiid;
                  E.iiid = Some ii;
-                 E.action = mk_act sz ea v;} es)
+                 E.action = mk_act byte (A.Location_global ea) v;} es)
             (eiid,E.EventSet.empty) eavs  in
         let st =
           { E.empty_event_structure with
@@ -649,6 +659,26 @@ and type evt_struct = E.event_structure) =
             E.sca = E.EventSetSet.singleton es;} in
         eiid,
         Evt.singleton (v,a_eqs@v_eqs,st)
+
+    let write_mixed sz mk_act a v ii =
+      fun eiid ->
+        let eas,a_eqs = byte_eas sz a
+        and vs,v_eqs = explode sz v in
+        let eiid,es =
+          List.fold_left2
+            (fun (eiid,es) ea v ->
+              eiid+1,
+              E.EventSet.add
+                {E.eiid = eiid;
+                 E.iiid = Some ii;
+                 E.action = mk_act byte (A.Location_global ea) v;} es)
+            (eiid,E.EventSet.empty) eas vs in
+         let st =
+          { E.empty_event_structure with
+            E.events = es;
+            E.sca = E.EventSetSet.singleton es;} in
+        eiid,
+         Evt.singleton ((),a_eqs@v_eqs,st)
 
 (* Add an inequality constraint *)
     let neqT : V.v -> V.v -> unit t
