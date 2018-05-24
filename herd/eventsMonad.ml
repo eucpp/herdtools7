@@ -594,8 +594,7 @@ and type evt_struct = E.event_structure) =
     module Scalar = V.Cst.Scalar
     let def_size = Scalar.machsize
 
-    let v_ff  = V.intToV 0xff
-    let extract_byte v = VC.Binop (Op.And,v,v_ff)
+    let extract_byte v = VC.Unop (Op.AndK 0xff,v)
 
     let extract_step v =
       let d = extract_byte v
@@ -633,7 +632,7 @@ and type evt_struct = E.event_structure) =
         else
           let xa = V.fresh_var() in
           let xas,eqs = do_rec (k+1) in
-          xa::xas,VC.Assign (xa,VC.Binop (Op.Add,a,V.intToV k))::eqs in
+          xa::xas,VC.Assign (xa,VC.Unop (Op.AddK k,a))::eqs in
       let xas,eqs = do_rec 1 in
       a::xas,eqs
 
