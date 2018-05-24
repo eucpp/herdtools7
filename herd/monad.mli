@@ -130,7 +130,7 @@ module type S =
 
     val assign : A.V.v -> A.V.v -> unit t
 
-    val initwrites : (A.location * A.V.v) list -> unit t
+    val initwrites : (A.location * A.V.v) list -> A.size_env -> unit t
 
 (* Read out monad *)
     type evt_struct
