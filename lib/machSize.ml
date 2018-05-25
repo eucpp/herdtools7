@@ -26,6 +26,7 @@ let parse tag = match String.lowercase_ascii tag with
 | "short" -> Some Short
 | "word" -> Some Word
 | "quad" -> Some Quad
+| _      -> None
 
 let pp = function
   | Byte -> "byte"
