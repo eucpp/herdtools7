@@ -1,6 +1,5 @@
 "C++11" withinit
 
-include "c11_cos.cat"
 include "c11_los.cat"
 
 
