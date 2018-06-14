@@ -56,34 +56,35 @@ rule token = parse
 | "cas" { I_CAS }
 | "exch" { I_EXCH }
 | "fence" { I_FENCE }
+| "fence.sc" { I_FENCE_SC }
 (* Scopes *)
-| "cta" -> { PTX.CTA }
-| "gpu" -> { PTX.GPU }
-| "sys" -> { PTX.SYS }
+| "cta" -> { OP_SCOPE PTX.CTA }
+| "gpu" -> { OP_SCOPE PTX.GPU }
+| "sys" -> { OP_SCOPE PTX.SYS }
 (* Semantics modifiers *)
-| "relaxed" -> { PTX.RLX }
-| "release" -> { PTX.REL }
-| "acquire" -> { PTX.ACQ }
-| "acq_rel" -> { PTX.ACQ_REL }
-| "sc"      -> { PTX.SC }
-(* Comparison operators *)
-| "eq" -> { PTX.C_EQ }
-| "ne" -> { PTX.C_NE }
-| "le" -> { PTX.C_LE }
-| "lt" -> { PTX.C_LT }
-| "ge" -> { PTX.C_GE }
-| "gt" -> { PTX.C_GT }
+| "relaxed" -> { OP_SEM PTX.RLX }
+| "release" -> { OP_SEM PTX.REL }
+| "acquire" -> { OP_SEM PTX.ACQ }
+| "acq_rel" -> { OP_SEM PTX.ACQ_REL }
+| "sc"      -> { OP_SEM PTX.SC }
 (* Type modifiers *)
-| "s16" { PTX.S16 }
-| "s32" { PTX.S32 }
-| "s64" { PTX.S64 }
-| "u16" { PTX.U16 }
-| "u32" { PTX.U32 }
-| "u64" { PTX.U64 }
-| "b16" { PTX.B16 }
-| "b32" { PTX.B32 }
-| "b64" { PTX.B64 }
-| "pred" { PTX.PRED }
+| "s16" { OP_TYPE PTX.S16 }
+| "s32" { OP_TYPE PTX.S32 }
+| "s64" { OP_TYPE PTX.S64 }
+| "u16" { OP_TYPE PTX.U16 }
+| "u32" { OP_TYPE PTX.U32 }
+| "u64" { OP_TYPE PTX.U64 }
+| "b16" { OP_TYPE PTX.B16 }
+| "b32" { OP_TYPE PTX.B32 }
+| "b64" { OP_TYPE PTX.B64 }
+| "pred" { OP_TYPE PTX.PRED }
+(* Comparison operators *)
+| "eq" -> { CMP_OP PTX.C_EQ }
+| "ne" -> { CMP_OP PTX.C_NE }
+| "le" -> { CMP_OP PTX.C_LE }
+| "lt" -> { CMP_OP PTX.C_LT }
+| "ge" -> { CMP_OP PTX.C_GE }
+| "gt" -> { CMP_OP PTX.C_GT }
 (* other *)
 | name as x
   { match PTX.parse_reg x with

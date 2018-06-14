@@ -92,14 +92,6 @@ let pp_scope = function
 (* Barriers *)
 (************)
 
-type barrier_sem =
-  | SC
-  | ACQ_REL
-
-let pp_barrier_sem = function
-  | SC -> "sc"
-  | ACQ_REL -> "acq_rel"
-
 type barrier =
   | Fence of scope
   | FenceSC of scope
@@ -121,12 +113,12 @@ let barrier_compare = Pervasives.compare
 (****************)
 
 type operand =
-  | Operand_reg of reg
-  | Operand_imm of int
+  | Op_reg of reg
+  | Op_imm of int
 
 let pp_operand = function
-  | Operand_reg r -> pp_reg r
-  | Operand_imm i -> sprintf "%d" i
+  | Op_reg r -> pp_reg r
+  | Op_imm i -> sprintf "%d" i
 
 type op_type =
   | S16
@@ -210,11 +202,10 @@ let pp_op_sem = function
   | ACQ -> "acquire"
   | ACQ_REL -> "acq_rel"
 
-
 type instruction_base =
   | I_ADD of op_type * reg * operand * operand
   | I_AND of op_type * reg * operand * operand
-  | P_MOV of op_type * reg * operand
+  | I_MOV of op_type * reg * operand
   | I_SETP of cmp_op * op_type * reg * operand * operand
   | I_LD of op_sem * scope * op_type * reg * reg
   | I_ST of op_sem * scope * op_type * reg * reg
