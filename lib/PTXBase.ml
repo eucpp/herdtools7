@@ -189,14 +189,14 @@ let pp_atom_op = function
   | A_DEC -> "dec"
 
 type op_sem =
-  (*| WEAK*)
+  | WEAK
   | RLX
   | REL
   | ACQ
   | ACQ_REL
 
 let pp_op_sem = function
-  (*| WEAK -> "weak"*)
+  | WEAK -> "weak"
   | RLX -> "relaxed"
   | REL -> "release"
   | ACQ -> "acquire"
@@ -220,7 +220,7 @@ let pp_instruction_base instr = match instr with
   | I_AND (typ, r, a, b) ->
     sprintf "and.%s %s, %s, %s"
       (pp_op_type typ) (pp_reg r) (pp_operand a) (pp_operand b)
-  | P_MOV (typ, r, a) ->
+  | I_MOV (typ, r, a) ->
     sprintf "mov.%s %s, %s"
       (pp_op_type typ) (pp_reg r) (pp_operand a)
   | I_SETP (op, typ, r, a, b) ->
