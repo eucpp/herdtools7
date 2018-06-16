@@ -28,29 +28,42 @@ module Make (C:Arch_herd.Config)(V:Value.S) =
 
     let reject_mixed = true
 
-    (* annotation is a triple:
+    (* annotation is a tuple of:
         operation semantics (i.g. release/acquire);
-        is_atomic flag;
+        operation scope (i.g. work-group/device);
+        atomicity flag;
         size of operands
     *)
-    type lannot = op_sem * bool * MachSize.sz
+    type lannot = op_sem * scope * bool * MachSize.sz
 
-    let get_machsize (_, _, sz) = sz
+    let get_machsize (_, _, _, sz) = sz
 
-    let empty_annot = (WEAK, false, MachSize.Quad)
+    let empty_annot = (WEAK, CTA, false, MachSize.Quad)
 
-    let is_atomic (_, atom, _) -> atom
+    let is_atomic (_, _, atom, _) -> atom
 
-    let is_acquire (sem, _, _) = function
+    let is_acquire (sem, _, _, _) = match sem with
     | ACQ -> true
     | _ -> false
 
-    let is_release (sem, _, _) = function
+    let is_release (sem, _, _, _) = match sem with
     | REL -> true
     | _ -> false
 
-    let is_acq_rel = function
+    let is_acq_rel (sem, _, _, _) = match sem with
     | ACQ_REL -> true
+    | _ -> false
+
+    let is_cta_scoped (_, scp, _, _) = match scp with
+    | CTA -> true
+    | _ -> false
+
+    let is_gpu_scoped (_, scp, _, _) = match scp with
+    | GPU -> true
+    | _ -> false
+
+    let is_sys_scoped (_, scp, _, _) = match scp with
+    | SYS -> true
     | _ -> false
 
     let annot_sets =
@@ -58,16 +71,25 @@ module Make (C:Arch_herd.Config)(V:Value.S) =
         "Acq", is_acquire;
         "Rel", is_release;
         "AcqRel", is_acq_rel;
+        "cta", is_cta_scoped;
+        "gpu", is_gpu_scoped;
+        "sys", is_sys_scoped;
       ]
 
-    let pp_annot (sem, a, _) =
-      let s = match sem with
+    let pp_annot (sem, scp, a, _) =
+      let ssem = match sem with
       | WEAK -> ""
       | RLX -> "Rlx"
       | ACQ -> "Acq"
       | Rel -> "Rel"
       | AcqRel -> "AcqRel"
       in
+      let sscp = match scp with
+      | CTA -> ""
+      | GPU -> "gpu"
+      | SYS -> "sys"
+      in
+      let s = if sscp = "" then ssem else sprintf "%s[%s]" ssem sscp in
       if a then s ^ "*" else s
 
     let barrier_sets =
